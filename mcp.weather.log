@@ -1,0 +1,3 @@
+2025-11-25T16:45:55.281+08:00  INFO 38128 --- [reactor-http-nio-11] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2024-11-05, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null], Info: Implementation[name=spring-ai-mcp-client - server1, version=1.0.0]
+2025-11-25T16:47:02.054+08:00  INFO 38128 --- [SpringApplicationShutdownHook] o.s.b.w.embedded.netty.GracefulShutdown  : Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-25T16:47:02.219+08:00  INFO 38128 --- [netty-shutdown] o.s.b.w.embedded.netty.GracefulShutdown  : Graceful shutdown complete

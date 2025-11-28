@@ -1,0 +1,28 @@
+package com.example.openai.streaming.configuration;
+
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.WebFluxSseClientTransport;
+import io.modelcontextprotocol.spec.McpClientTransport;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+
+/**
+ * @author n039920
+ * @date 2025/11/19
+ * @description TODO
+ */
+@Configuration
+public class McpClientConfig {
+
+    @Bean
+    public McpSyncClient mcpClientTransport() {
+        WebFluxSseClientTransport transport =
+                new WebFluxSseClientTransport(WebClient.builder().baseUrl("http://10.20.40.246:8080"));
+        McpSyncClient client = McpClient.sync(transport).build();
+        client.initialize();
+        client.ping();
+        return client;
+    }
+}
