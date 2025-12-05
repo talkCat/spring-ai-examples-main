@@ -129,10 +129,10 @@ public class DocumentReadersTest {
 
     @Test
     public void test1() throws Exception {
-        List<Document> documents = AdvancedBookmarkParser.parsePdfToDocuments("D:\\project\\spring-ai-examples-main\\misc\\openai-streaming-response\\src\\main\\resources\\111.pdf");
+        List<Document> documents = AdvancedBookmarkParser.parsePdfToDocuments("C:\\Users\\Administrator\\Desktop\\临时文件\\20251128\\demo.pdf");
 
         // 更保守的分割配置
-        TokenTextSplitter splitter = new TokenTextSplitter(5000, 350, 5, 8000, true);
+        TokenTextSplitter splitter = new TokenTextSplitter(2000, 350, 5, 3000, true);
 
         List<Document> splitDocuments = splitter.apply(documents);
 
@@ -159,7 +159,7 @@ public class DocumentReadersTest {
         List<Document> documents = vectorStore.similaritySearch(SearchRequest.builder()
                 .query("密云水库")
                 .topK(10)
-                .similarityThreshold(0.75)
+                .similarityThreshold(0.7)
                 .filterExpression("'page' == '103'").build());
 
         for (Document doc : documents) {

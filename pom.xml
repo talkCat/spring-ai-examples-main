@@ -23,6 +23,8 @@
 
 		<module>misc/spring-ai-java-function-callback</module>
 		<module>misc/openai-streaming-response</module>
+		<module>misc/openai-octopathsp-agent</module>
+
 
 		<module>models/chat/helloworld</module>
 

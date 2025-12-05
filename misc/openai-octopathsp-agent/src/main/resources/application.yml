@@ -1,0 +1,66 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: openai-streaming-response
+  elasticsearch:
+    uris: http://192.168.102.19:9200
+    username: elastic
+    password: elastic@2024
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            schema: classpath:org/springframework/ai/chat/memory/repository/jdbc/schema-postgresql.sql
+    openai:
+      base-url: http://192.168.102.19:8082
+      api-key: sgZWmYMdxG2m
+      embedding:
+        options:
+          model: text-embedding-ada-003
+      chat:
+        options:
+          model: qwen
+          temperature: 0.8
+          max-tokens: 1000
+    vectorstore:
+      elasticsearch:
+        initialize-schema: true
+        index-name: custom-index-1024
+        dimensions: 1024
+        similarity: cosine
+#    mcp:
+#      client:
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8080
+
+minio:
+  endpoint: http://192.168.102.19:9001
+  accesskey: minioadmin
+  secretkey: minioadmin
+  expiry: 1  #分片对象过期时间 单位（天）
+  breakpoint-time: 1 #断点续传有效时间，在redis存储任务的时间 单位（天）
+  bucket: test
+
+logging:
+  level:
+    com: DEBUG
+    org.springframework: INFO
+    org.hibernate: INFO
+    org.springframework.ai: DEBUG
+    org.springframework.jdbc: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/application.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+
