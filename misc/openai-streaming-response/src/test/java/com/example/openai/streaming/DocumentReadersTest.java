@@ -3,6 +3,7 @@ package com.example.openai.streaming;
 import com.example.openai.streaming.bean.StreamResponse;
 import com.example.openai.streaming.configuration.VectorStoreFactory;
 import com.example.openai.streaming.tools.TimeTool;
+import com.example.openai.streaming.tools.WeatherTool;
 import com.example.openai.streaming.util.AdvancedBookmarkParser;
 import com.example.openai.streaming.util.MinioUtils;
 import com.knuddels.jtokkit.api.EncodingType;
@@ -26,6 +27,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.BatchingStrategy;
 import org.springframework.ai.embedding.TokenCountBatchingStrategy;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.transformer.KeywordMetadataEnricher;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.rag.Query;
@@ -40,6 +42,8 @@ import org.springframework.ai.reader.ExtractedTextFormatter;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.ParagraphPdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -299,8 +303,16 @@ public class DocumentReadersTest {
     //tool call
     @Test
     public void test13() throws Exception {
-        ChatClient chatClient = ChatClient.builder(chatModel).build();
-        String content = chatClient.prompt().tools(new TimeTool()).user("南京今天的天气如何？").call().content();
+
+        ToolCallback[] customerTools = ToolCallbacks.from(new TimeTool(), new WeatherTool());
+
+        ChatClient chatClient = ChatClient
+                .builder(chatModel)
+                .defaultOptions(ToolCallingChatOptions.builder()
+                        .toolCallbacks(customerTools)
+                        //.toolContext(Map.of("tenantId", "acme"))
+                        .build()).build();
+        String content = chatClient.prompt().user("南京现在的天气如何？").call().content();
         System.out.println(content);
     }
 

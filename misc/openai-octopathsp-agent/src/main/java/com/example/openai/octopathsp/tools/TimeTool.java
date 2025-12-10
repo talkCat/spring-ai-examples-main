@@ -1,7 +1,6 @@
-package com.example.openai.streaming.tools;
+package com.example.openai.octopathsp.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.LocalDateTime;

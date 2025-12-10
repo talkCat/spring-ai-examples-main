@@ -1,32 +1,36 @@
 package com.example.openai.octopathsp;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.example.openai.octopathsp.agent.CharacterAgent;
 import com.example.openai.octopathsp.bean.AgentRoute;
 import com.example.openai.octopathsp.prompt.PromptTemplateCustomize;
-import com.example.openai.octopathsp.tools.AgentRouter;
+import com.example.openai.octopathsp.tools.AccessoryTool;
+import com.example.openai.octopathsp.tools.TimeTool;
+import com.example.openai.octopathsp.tools.WeatherTool;
 import com.example.openai.octopathsp.utils.AdvancedBookmarkParser;
+import com.example.openai.octopathsp.utils.AgentRouter;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
+import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.template.st.StTemplateRenderer;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -49,6 +53,14 @@ public class AgentDemoTest {
     @Autowired
     AgentRouter agentRouter;
 
+    @Autowired
+    ChatModel chatModel;
+
+    @Autowired
+    ElasticsearchClient elasticsearchClient;
+
+    @Autowired
+    private ElasticsearchTemplate elasticsearchTemplate;
 
     @Test
     public void test5() throws Exception {
@@ -57,12 +69,12 @@ public class AgentDemoTest {
         TokenTextSplitter splitter = new TokenTextSplitter(2000, 350, 5, 3000, true);
         List<Document> splitDocuments = splitter.apply(documents);
         indexCharacterVectorStore.add(splitDocuments);
-
     }
+
 
     @Test
     public void test() {
-        String userQuery = "有哪饰品可以使伤害上限增加？";
+        String userQuery = "有哪技能可以使伤害上限增加？";
         AgentRoute agentRoute = agentRouter.route(userQuery);
         System.out.println(agentRoute);
     }
@@ -180,5 +192,26 @@ public class AgentDemoTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test13() throws Exception {
+
+        SimpleLoggerAdvisor customLogger = new SimpleLoggerAdvisor(
+                request -> "Custom request: " + request.prompt().getUserMessage(),
+                response -> "Custom response: " + response.getResult().getOutput().getText(),
+                1
+        );
+
+        ToolCallback[] customerTools = ToolCallbacks.from(new TimeTool(), new WeatherTool(), new AccessoryTool());
+
+        ChatClient chatClient = ChatClient
+                .builder(chatModel)
+                .defaultAdvisors(customLogger)
+                .defaultOptions(ToolCallingChatOptions.builder()
+                        .toolCallbacks(customerTools)
+                        .build()).build();
+        String content = chatClient.prompt().user("休吉普饰品效果？").call().content();
+        System.out.println(content);
     }
 }

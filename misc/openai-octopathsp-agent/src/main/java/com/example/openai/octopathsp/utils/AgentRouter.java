@@ -1,4 +1,4 @@
-package com.example.openai.octopathsp.tools;
+package com.example.openai.octopathsp.utils;
 
 import com.example.openai.octopathsp.bean.AgentRoute;
 import com.example.openai.octopathsp.enums.AgentType;
@@ -26,7 +26,7 @@ public class AgentRouter {
     // 路由关键词配置
     private final Map<AgentType, List<String>> agentKeywords = Map.of(
             AgentType.CHARACTER_SKILL, List.of(
-                    "技能", "天赋", "职业", "角色", "攻击", "防御", "法术", "战斗", "升级",
+                    "技能", "天赋", "职业", "攻击", "防御", "法术", "战斗", "升级",
                     "转职", "加点", "属性", "战斗力", "职业选择", "技能搭配"
             ),
             AgentType.ACCESSORY, List.of(

@@ -8,6 +8,7 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.retrieval.search.DocumentRetriever;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
@@ -44,15 +45,40 @@ public class ChatConfig {
 
     //角色信息
     @Bean
-    public ChatClient chatCharacterClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexCharacterVectorStore) {
+    public ChatClient chatCharacterClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexCharacterVectorStore, DocumentRetriever hybridDocumentRetriever) {
         //检索增强
         RetrievalAugmentationAdvisor advisor = RetrievalAugmentationAdvisor.builder()
                 .queryAugmenter(QueryAugmenterFactory.getContextBasedQueryAugmenter())
-                .documentRetriever(VectorStoreDocumentRetriever.builder()
+                /*.documentRetriever(VectorStoreDocumentRetriever.builder()
                         .vectorStore(indexCharacterVectorStore)
                         .similarityThreshold(0.4)
                         .topK(100)
-                        .build())
+                        .build())*/  //ES 向量检索
+                .documentRetriever(hybridDocumentRetriever) //ES 混合检索
+                .build();
+        return ChatClient.builder(chatModel)
+                .defaultAdvisors(
+                        advisor
+                        //MessageChatMemoryAdvisor.builder(chatMemory).build()
+                )
+                .defaultSystem(PromptTemplateCustomize.SYSTEM_PROMPT)
+                // 低温度确保分类稳定
+                .defaultOptions(ChatOptions.builder().temperature(0.4).build())
+                .build();
+    }
+
+    //饰品信息
+    @Bean
+    public ChatClient chatAccessoryClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexAccessoryVectorStore, DocumentRetriever hybridDocumentRetriever) {
+        //检索增强
+        RetrievalAugmentationAdvisor advisor = RetrievalAugmentationAdvisor.builder()
+                .queryAugmenter(QueryAccessoryAugmenterFactory.getContextBasedQueryAugmenter())
+                /*.documentRetriever(VectorStoreDocumentRetriever.builder()
+                        .vectorStore(indexAccessoryVectorStore)
+                        .similarityThreshold(0.7)
+                        .topK(30)
+                        .build())  //ES 向量检索*/
+                .documentRetriever(hybridDocumentRetriever) //ES 混合检索
                 .build();
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(

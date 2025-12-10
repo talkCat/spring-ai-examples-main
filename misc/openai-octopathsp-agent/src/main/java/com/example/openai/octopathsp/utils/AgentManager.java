@@ -1,4 +1,4 @@
-package com.example.openai.octopathsp.tools;
+package com.example.openai.octopathsp.utils;
 
 import com.example.openai.octopathsp.agent.AccessoryAgent;
 import com.example.openai.octopathsp.agent.CharacterAgent;

@@ -48,7 +48,15 @@ public class ElasticsearchVectorStoreConfiguration {
     public VectorStore indexCharacterVectorStore(RestClient restClient, EmbeddingModel embeddingModel) {
         ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
         options.setDimensions(1024);
-        options.setIndexName("custom-character-index-1024");
+        options.setIndexName("custom-character-index-1024-v2");
+        return ElasticsearchVectorStore.builder(restClient, embeddingModel).initializeSchema(true).options(options).build();
+    }
+
+    @Bean
+    public VectorStore indexAccessoryVectorStore(RestClient restClient, EmbeddingModel embeddingModel) {
+        ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
+        options.setDimensions(1024);
+        options.setIndexName("custom-accessory-index-1024");
         return ElasticsearchVectorStore.builder(restClient, embeddingModel).initializeSchema(true).options(options).build();
     }
 

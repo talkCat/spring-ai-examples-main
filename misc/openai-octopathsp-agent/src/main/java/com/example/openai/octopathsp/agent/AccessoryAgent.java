@@ -22,10 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AccessoryAgent {
 
     @Autowired
-    private ChatClient chatClient;
+    private ChatClient chatAccessoryClient;
 
     public Flux<StreamResponse> getAccessoryInfo(String query){
-        AtomicReference<String> messageId = new AtomicReference<>(UUID.randomUUID().toString());
+        /*AtomicReference<String> messageId = new AtomicReference<>(UUID.randomUUID().toString());
         //获取饰品信息
         String accessoryInfo = JsonReader.readJsonFileAsString("accessories.json");
         //获取提示词模板
@@ -34,6 +34,20 @@ public class AccessoryAgent {
                 .build();
         String prompt = promptTemplate.render(Map.of("context", accessoryInfo, "query", query));
         return chatClient.prompt(prompt)
+                .stream()
+                .content()
+                .map(chatResponse -> {
+                    StreamResponse response = new StreamResponse();
+                    response.setContent(chatResponse);
+                    response.setCompleted(false);
+                    response.setMessageId(messageId.get());
+                    return response;
+                })
+                .concatWithValues(createCompletionSignal(messageId.get()))
+                .onErrorReturn(createErrorResponse(messageId.get()));*/
+        AtomicReference<String> messageId = new AtomicReference<>(UUID.randomUUID().toString());
+        return chatAccessoryClient.prompt()
+                .user(query)
                 .stream()
                 .content()
                 .map(chatResponse -> {

@@ -1,4 +1,4 @@
-package com.example.openai.streaming.tools;
+package com.example.openai.streaming.util;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
