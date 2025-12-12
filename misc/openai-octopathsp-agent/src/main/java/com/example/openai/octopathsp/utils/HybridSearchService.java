@@ -7,14 +7,20 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import org.junit.jupiter.api.Test;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author n039920
@@ -27,16 +33,14 @@ public class HybridSearchService {
     @Autowired
     EmbeddingModel embeddingModel;
 
-    @Autowired
-    private ElasticsearchClient elasticsearchClient;
-
     /**
      * 方法1：使用 knn 结合 bool 查询进行混合搜索
      * 这是 ES 8.x 中推荐的混合查询方式
      */
     public List<Document> hybridSearchWithKnnBool(String queryText,
                                                   Map<String, Object> textFilters,
-                                                  int topK) throws IOException {
+                                                  int topK,
+                                                  VectorStore vectorStore) throws IOException {
         // 1. 生成查询向量
         float[] queryVectorFloat = embeddingModel.embed(queryText);
         List<Float> queryVector = new ArrayList<>();
@@ -57,35 +61,16 @@ public class HybridSearchService {
 
         // 4. 构建完整的搜索请求 - 传递 List<KnnSearch>
         SearchRequest request = SearchRequest.of(s -> s
-                .index("custom-accessory-index-1024")
+                .index(getIndexNameByMethodInvocation((ElasticsearchVectorStore)vectorStore))
                 .knn(Collections.singletonList(knnSearch))  // 传递 List<KnnSearch>
                 .query(textQuery)
                 .size(topK)
         );
 
-        return executeSearch(request);
+        return executeSearch(request, vectorStore);
     }
 
 
-    /**
-     * 方式4：使用 combined_fields 查询（文本搜索优化）
-     */
-    public List<Document> combinedFieldsSearch(String queryText,
-                                               List<String> fields,
-                                               int k) throws IOException {
-        SearchRequest request = SearchRequest.of(s -> s
-                .index("custom-character-index-1024-v2")
-                .query(q -> q
-                        .combinedFields(cf -> cf
-                                .query(queryText)
-                                .fields(fields)
-                        )
-                )
-                .size(k)
-        );
-
-        return executeSearch(request);
-    }
 
     /**
      * 辅助方法：构建文本查询
@@ -110,7 +95,8 @@ public class HybridSearchService {
     }
 
 
-    private List<Document> executeSearch(SearchRequest request) throws IOException {
+    private List<Document> executeSearch(SearchRequest request, VectorStore vectorStore) throws IOException {
+        ElasticsearchClient elasticsearchClient = (ElasticsearchClient) vectorStore.getNativeClient().get();
         SearchResponse<Map> response = elasticsearchClient.search(request, Map.class);
         return convertToDocuments(response);
     }
@@ -122,5 +108,22 @@ public class HybridSearchService {
             documents.add(new Document(hit.id(), String.valueOf(source.get("content")), source));
         }
         return documents;
+    }
+
+    private String getIndexNameByMethodInvocation(ElasticsearchVectorStore esStore) {
+        try {
+            // 获取 options 字段
+            Field optionsField = ElasticsearchVectorStore.class.getDeclaredField("options");
+            optionsField.setAccessible(true);
+            Object options = optionsField.get(esStore);
+
+            // 尝试调用 getIndexName 方法
+            Method getIndexNameMethod = options.getClass().getMethod("getIndexName");
+            return (String) getIndexNameMethod.invoke(options);
+
+        } catch (Exception e) {
+            // 如果上述方法失败，使用更直接的方法
+            return "custom-character-index-1024-v2";
+        }
     }
 }

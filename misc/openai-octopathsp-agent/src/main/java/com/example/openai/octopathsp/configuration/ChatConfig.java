@@ -1,6 +1,8 @@
 package com.example.openai.octopathsp.configuration;
 
 import com.example.openai.octopathsp.prompt.PromptTemplateCustomize;
+import com.example.openai.octopathsp.utils.HybridDocumentRetriever;
+import com.example.openai.octopathsp.utils.HybridSearchService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
@@ -8,7 +10,6 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
-import org.springframework.ai.rag.retrieval.search.DocumentRetriever;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
@@ -45,16 +46,19 @@ public class ChatConfig {
 
     //角色信息
     @Bean
-    public ChatClient chatCharacterClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexCharacterVectorStore, DocumentRetriever hybridDocumentRetriever) {
+    public ChatClient chatCharacterClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexCharacterVectorStore, HybridSearchService hybridSearchService) {
         //检索增强
         RetrievalAugmentationAdvisor advisor = RetrievalAugmentationAdvisor.builder()
                 .queryAugmenter(QueryAugmenterFactory.getContextBasedQueryAugmenter())
-                /*.documentRetriever(VectorStoreDocumentRetriever.builder()
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
                         .vectorStore(indexCharacterVectorStore)
-                        .similarityThreshold(0.4)
+                        .similarityThreshold(0.6)
                         .topK(100)
-                        .build())*/  //ES 向量检索
-                .documentRetriever(hybridDocumentRetriever) //ES 混合检索
+                        .build())  //ES 向量检索
+                /*.documentRetriever(HybridDocumentRetriever.builder()
+                        .vectorStore(indexCharacterVectorStore)
+                        .hybridSearchService(hybridSearchService)
+                        .build()) //ES 混合检索*/
                 .build();
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(
@@ -69,16 +73,19 @@ public class ChatConfig {
 
     //饰品信息
     @Bean
-    public ChatClient chatAccessoryClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexAccessoryVectorStore, DocumentRetriever hybridDocumentRetriever) {
+    public ChatClient chatAccessoryClient(ChatModel chatModel, ChatMemory chatMemory, VectorStore indexAccessoryVectorStore, HybridSearchService hybridSearchService) {
         //检索增强
         RetrievalAugmentationAdvisor advisor = RetrievalAugmentationAdvisor.builder()
                 .queryAugmenter(QueryAccessoryAugmenterFactory.getContextBasedQueryAugmenter())
                 /*.documentRetriever(VectorStoreDocumentRetriever.builder()
                         .vectorStore(indexAccessoryVectorStore)
-                        .similarityThreshold(0.7)
+                        .similarityThreshold(0.5)
                         .topK(30)
                         .build())  //ES 向量检索*/
-                .documentRetriever(hybridDocumentRetriever) //ES 混合检索
+                .documentRetriever(HybridDocumentRetriever.builder()
+                        .vectorStore(indexAccessoryVectorStore)
+                        .hybridSearchService(hybridSearchService)
+                        .build()) //ES 混合检索
                 .build();
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(
