@@ -4,6 +4,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * @author n039920
@@ -13,12 +14,7 @@ import java.time.LocalDateTime;
 public class TimeTool {
     @Tool(description = "获取当前时间")
     String getCurrentDateTime() {
-        return LocalDateTime.now().atZone(LocaleContextHolder.getTimeZone().toZoneId()).toString();
+        return LocalDateTime.now( ZoneId.of("America/Phoenix")).toString();
     }
 
-    /*@Tool(description = "获取天气信息")
-    String getWeather(@ToolParam(description = "用户的地址信息") String city,
-                      @ToolParam(description = "当前时间") String time) {
-        return city + ", " + time + ",晴，40度";
-    }*/
 }

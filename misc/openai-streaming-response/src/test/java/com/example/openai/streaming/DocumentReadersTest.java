@@ -312,7 +312,7 @@ public class DocumentReadersTest {
                         .toolCallbacks(customerTools)
                         //.toolContext(Map.of("tenantId", "acme"))
                         .build()).build();
-        String content = chatClient.prompt().user("南京现在的天气如何？").call().content();
+        String content = chatClient.prompt().user("现在几点了？南京的天气如何？").call().content();
         System.out.println(content);
     }
 

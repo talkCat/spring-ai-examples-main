@@ -38,7 +38,8 @@ public class ChatConfig {
     public ChatClient chatClient(ChatModel chatModel, ChatMemory chatMemory) {
         return ChatClient.builder(chatModel)
                 /*.defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+                        toolCallAdvisor
+                        //MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )*/
                 .defaultOptions(ChatOptions.builder().temperature(0.8).build())
                 .build();
@@ -97,5 +98,7 @@ public class ChatConfig {
                 .defaultOptions(ChatOptions.builder().temperature(0.4).build())
                 .build();
     }
+
+
 
 }

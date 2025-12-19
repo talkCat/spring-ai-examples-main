@@ -17,10 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author n039920
@@ -96,8 +93,14 @@ public class HybridSearchService {
 
 
     private List<Document> executeSearch(SearchRequest request, VectorStore vectorStore) throws IOException {
-        ElasticsearchClient elasticsearchClient = (ElasticsearchClient) vectorStore.getNativeClient().get();
-        SearchResponse<Map> response = elasticsearchClient.search(request, Map.class);
+        //访问原生客户端
+        Optional<ElasticsearchClient> nativeClient = vectorStore.getNativeClient();
+        ElasticsearchClient client = null;
+        if (nativeClient.isPresent()) {
+            client = nativeClient.get();
+            // 使用原生客户端进行Elasticsearch特定的操作
+        }
+        SearchResponse<Map> response = client.search(request, Map.class);
         return convertToDocuments(response);
     }
 
