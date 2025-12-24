@@ -78,15 +78,15 @@ public class ChatConfig {
         //检索增强
         RetrievalAugmentationAdvisor advisor = RetrievalAugmentationAdvisor.builder()
                 .queryAugmenter(QueryAccessoryAugmenterFactory.getContextBasedQueryAugmenter())
-                /*.documentRetriever(VectorStoreDocumentRetriever.builder()
+                .documentRetriever(VectorStoreDocumentRetriever.builder()
                         .vectorStore(indexAccessoryVectorStore)
-                        .similarityThreshold(0.5)
+                        .similarityThreshold(0.6)
                         .topK(30)
-                        .build())  //ES 向量检索*/
-                .documentRetriever(HybridDocumentRetriever.builder()
+                        .build())  //ES 向量检索
+                /*.documentRetriever(HybridDocumentRetriever.builder()
                         .vectorStore(indexAccessoryVectorStore)
                         .hybridSearchService(hybridSearchService)
-                        .build()) //ES 混合检索
+                        .build()) //ES 混合检索*/
                 .build();
         return ChatClient.builder(chatModel)
                 .defaultAdvisors(
